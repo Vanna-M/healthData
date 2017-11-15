@@ -23,6 +23,33 @@ elements = []
 #also create space for the aesthetic
 space = .1 * inch
 
+#accepts a list of strings to be printed with the numbers
+#first string is the title, other strings are numbered point
+def numPoints(points):
+    if len(points) < 2:
+        return "error: too short"
+    #style for title
+    style = ParagraphStyle(name='Normal',fontName='Times',fontSize=14,)
+    elements.append(Paragraph(points[0],style))
+    elements.append(Spacer(1, space))
+    #style for elements
+    style = ParagraphStyle(name='Normal',fontName='Times',fontSize=12,)
+    for it,point in enumerate(points[1:]):
+        elements.append(Paragraph("%d-%s"%(it+1,point),style))
+        elements.append(Spacer(1, space))
+    elements.append(Spacer(1, 2*space))
+
+#creates the image from plot, inserts it into pdf, then removes it
+import matplotlib.pyplot as plt
+
+def imgSaveInsert(title):
+    plt.savefig('%s.png'%title)
+    img = Image('%s.png'%title)
+    img._restrictSize(50 * space, 50 * space)
+    elements.append(img)
+    os.remove('%s.png'%title)
+    plt.clf()
+
 #let's get a title in
 style = ParagraphStyle(name='Normal',fontName='Times',fontSize=18,)
 elements.append(Paragraph('Beahvioral Risk Factors Data: Health-Related Quality of Life', style))
@@ -33,21 +60,14 @@ elements.append(Spacer(1, 4 * space))
 style = ParagraphStyle(name='Normal',fontName='Times',fontSize=16,)
 elements.append(Paragraph('Analysis Part 1: How are people being affected by their poor health?',style))
 elements.append(Spacer(1, 2 * space))
-#style for Big Question
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=14,)
-elements.append(Paragraph('Big Questions:',style))
-elements.append(Spacer(1, space))
-#new style for questions
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=12,)
-elements.append(Paragraph('1-How is the average person affected by their health?',style))
-elements.append(Spacer(1, space))
-elements.append(Paragraph('''2-How many people are most affected by their poor
-health, and how much are they affected?''',style))
-elements.append(Spacer(1,space))
-elements.append(Paragraph('''3-How many people think that they have poor health,
-and how does this compare to relatively objective numbers?''',style))
-elements.append(Spacer(1, 3*space))
 
+p1 = 'How is the average person affected by their health?'
+p2 = '''How many people are most affected by their poor health, and how much
+are they affected?'''
+p3 = '''How many people think that they have poor health, and how does this
+compare to relatively objective numbers?'''
+
+numPoints(['Big Questions',p1,p2,p3])
 
 import pandas as pd
 import numpy as np
@@ -137,29 +157,17 @@ print "average of mean days of physical limitation: %f"%avgPhysicalLim
 avgData['Physically unhealthy'] = avgPhysicalLim
 
 #Let's look at what this data shows us
-import matplotlib.pyplot as plt
 plt.bar(range(len(avgData)), avgData.values(), align='center')
 plt.xticks(range(len(avgData)), avgData.keys())
 plt.ylabel('Days of Limitation')
 #these all have to be different lines because reportlab is finicky
-plt.savefig('healthLimits.png')
-img = Image('healthLimits.png')
-img._restrictSize(50 * space, 50 * space)
-elements.append(img)
-os.remove('healthLimits.png')
-plt.clf()
+imgSaveInsert('healthLimits')
 
-#let's write out a few conclusions from this graph
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=14,)
-elements.append(Paragraph('Conclusions',style))
-elements.append(Spacer(2,space))
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=12,)
-elements.append(Paragraph('1-No significant amount of days lost from any category.',style))
-elements.append(Spacer(1,space))
-elements.append(Paragraph('2-Physically unhealthy days more than mentally unhealthy days.',style))
-elements.append(Spacer(1,space))
-elements.append(Paragraph('3-Very few days of activity limitation, overall.',style))
-#works out, aesthetically, to go to the next page
+p1 = 'No significant amount of days lost from any category.'
+p2 = 'Physically unhealthy days more than mentally unhealthy days.'
+p3 = 'Very few days of activity limitation, overall.'
+
+numPoints(['Conclusions',p1,p2,p3])
 elements.append(PageBreak())
 
 #now, we'll write out the next bit we're focusing on
@@ -231,28 +239,17 @@ extData['Physical Limitation'] = avgHighPhysicalLim
 plt.bar(range(len(extData)), extData.values(), align='center')
 plt.xticks(range(len(extData)), extData.keys())
 plt.ylabel('Percentage of Population')
-plt.savefig('extremeLims.png')
-img = Image('extremeLims.png')
-img._restrictSize(50 * space, 50 * space)
-elements.append(img)
-os.remove('extremeLims.png')
-plt.clf()
+imgSaveInsert('extremeLims')
 
-#let's write out a few conclusions from this graph
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=14,)
-elements.append(Paragraph('Conclusions',style))
-elements.append(Spacer(1,2*space))
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=12,)
-elements.append(Paragraph('''1-Activity limitation minimal--few people
-suffer from it.''',style))
-elements.append(Spacer(1,space))
-elements.append(Paragraph('''2-Not a big difference between mental and physical
-limitation.''',style))
-elements.append(Spacer(1,space))
-elements.append(Paragraph('''3-Those who suffer do so greatly--14 is
-significantly more than 3.5, the max suffered by the average person, and 10%
-is still a significant amount of the population. There's clearly room for
-improvement.''',style))
+
+#let's write out a few conclusions from this section
+p1 = 'Activity limitation minimal--few people suffer from it.'
+p2 = 'Not a big difference between mental and physical limitation.'
+p3 = '''Those who suffer do so greatly--14 is significantly more than 3.5, the
+max suffered by the average person, and 10%  is still a significant amount of
+the population. There's clearly room for improvement.'''
+numPoints(['Conclusions',p1,p2,p3])
+
 #consistency: next page
 elements.append(PageBreak())
 
@@ -288,62 +285,35 @@ yVals.append('Self-Reported')
 plt.bar(range(len(extData)+1), xVals,.3)
 plt.xticks(range(len(extData)+1), yVals)
 plt.ylabel('Percentage of Population')
-plt.savefig('selfRate.png')
-img = Image('selfRate.png')
-img._restrictSize(50 * space, 50 * space)
-elements.append(img)
-os.remove('selfRate.png')
-plt.clf()
+imgSaveInsert('selfRate')
 
 #let's write out a few conclusions from this graph
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=14,)
-elements.append(Paragraph('Conclusions',style))
-elements.append(Spacer(1,2*space))
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=12,)
-txt = '''1-More people self-report poor health than suffer from mental or
+p1 = '''More people self-report poor health than suffer from mental or
 physical health limitations.'''
-elements.append(Paragraph(txt,style))
-elements.append(Spacer(1,space))
-elements.append(Paragraph('2-Implies obsession with health and wellness',style))
-elements.append(Spacer(1,space))
+p2 = 'Implies obsession with health and wellness'
+numPoints(['Conclusions',p1,p2])
 
-#spacing: now for our final conclusions from part 1
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=14,)
-elements.append(Paragraph('Insights from Part 1:',style))
-elements.append(Spacer(1,2*space))
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=12,)
-txt = '''The average person doesn't lose much from poor health, in terms of days
+p1 = '''The average person doesn't lose much from poor health, in terms of days
  made inactive, etc. due to suffering.'''
-elements.append(Paragraph('1-%s'%txt,style))
-elements.append(Spacer(1,space))
-txt = '''There are a not-inconsiderable amount of people who do lose a lot from
+p2 = '''There are a not-inconsiderable amount of people who do lose a lot from
 poor health; though they are relatively few, their loss is significant.'''
-elements.append(Paragraph('2-%s'%txt,style))
-elements.append(Spacer(1,space))
-txt = '''More people believe that they belong to this category than actually do,
+p3 = '''More people believe that they belong to this category than actually do,
 leaning toward the conclusion of some sort of nation-wide hypochondiracy.
 '''
-elements.append(Paragraph("3-%s"%txt,style))
+numPoints(['Insights from Part 1',p1,p2,p3])
+
 elements.append(PageBreak())
 
 #now, let's go to part 2 of our analysis
 style = ParagraphStyle(name='Normal',fontName='Times',fontSize=16,)
 elements.append(Paragraph('Analysis Part 2: Health differences',style))
 elements.append(Spacer(1, 2 * space))
-#style for Big Question
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=14,)
-elements.append(Paragraph('Big Questions:',style))
-elements.append(Spacer(1, space))
-#new style for questions
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=12,)
-elements.append(Paragraph('1-How does health differ by state?',style))
-elements.append(Spacer(1, space))
-elements.append(Paragraph('2-How does health differ by age group?',style))
-elements.append(Spacer(1, space))
-elements.append(Paragraph('3-How does health differ by race?',style))
-elements.append(Spacer(1, space))
-elements.append(Paragraph('4-How does health differ by biological sex?',style))
-elements.append(Spacer(1, 3*space))
+
+p1 = 'How does health differ by state?'
+p2 = 'How does health differ by age group?'
+p3 = 'How does health differ by race?'
+p4 = 'How does health differ by biological sex?'
+numPoints(['Big Questions',p1,p2,p3,p4])
 
 
 #a dictionary of dictionaries to get more info on states
@@ -457,28 +427,17 @@ for question in questions:
 
     plt.title(question)
 
-    plt.savefig('map.png')
-    img = Image('map.png')
-    img._restrictSize(50 * space, 50 * space)
-    elements.append(img)
-    os.remove('map.png')
-    plt.clf()
+    imgSaveInsert('map')
 
 #let's write out a few conclusions from this section
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=14,)
-elements.append(Paragraph('Conclusions',style))
-elements.append(Spacer(1,2*space))
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=12,)
-txt = '''1-Higher frequencies of each category tend to occur in the east coast
+p1 = '''Higher frequencies of each category tend to occur in the east coast
 states and California. This may have less to do with actual occurence and more
 to do with general medical practice and, perhaps, population. Or maybe cities
 are just dirty and unhealthy.'''
-elements.append(Paragraph(txt,style))
-elements.append(Spacer(1,space))
-txt = '''2-The states that have lower actual occurences of each category also
+p2 = '''The states that have lower actual occurences of each category also
 have less self-reported occurences. This is interesting, as it means that, as
 actual occurences go up, self-reported occurences go up at a higher rate.'''
-elements.append(Paragraph(txt,style))
+numPoints(['Conclusion',p1,p2])
 
 #no page break--messes up format
 
@@ -569,12 +528,7 @@ for question in questions:
     #we have a lot of info, let's make some space for it
     plt.gcf().subplots_adjust(bottom=0.15)
     plt.title("Distribution of Ages: %s"%question)
-    plt.savefig('ages.png')
-    img = Image('ages.png')
-    img._restrictSize(50 * space, 50 * space)
-    elements.append(img)
-    os.remove('ages.png')
-    plt.clf()
+    imgSaveInsert('ages')
 
     elements.append(Spacer(1, space))
 
@@ -584,12 +538,8 @@ for question in questions:
     plt.title("Distribution of Races: %s"%question)
     #it's a tight squeeze for x-labels
     plt.tight_layout()
-    plt.savefig('races.png')
-    img = Image('races.png')
-    img._restrictSize(50 * space, 50 * space)
-    elements.append(img)
-    os.remove('races.png')
-    #close to clear tight_layout
+    imgSaveInsert('races')
+    #extra step to clear tightSqueeze
     plt.close()
 
     elements.append(Spacer(1, 2*space))
@@ -598,33 +548,19 @@ for question in questions:
     align='center')
     plt.xticks(range(len(sexes[question])), sexes[question].keys())
     plt.title("Distribution of Sexes: %s"%question)
-    plt.savefig('sexes.png')
-    img = Image('sexes.png')
-    img._restrictSize(50 * space, 50 * space)
-    elements.append(img)
-    os.remove('sexes.png')
-    plt.clf()
+    imgSaveInsert('sexes')
 
 #our conclusions from part 2
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=14,)
-elements.append(Paragraph('Insights from Part 1:',style))
-elements.append(Spacer(1,2*space))
-style = ParagraphStyle(name='Normal',fontName='Times',fontSize=12,)
-txt = '''Highest physical health issues not among 75+, but 65-74 year old crowd. And
+p1 = '''Highest physical health issues not among 75+, but 65-74 year old crowd. And
 even then, not by much. Mental health issues, unsurprisingly, dominated by the
 18-24 crowd, but again, not by the percentage you would expect. Perhaps age
-isn't as big a factor as I thought'''
-elements.append(Paragraph("1-%s"%txt,style))
-elements.append(Spacer(1,space))
-txt = '''Native American/Alaskan Native doing worse by a lot in every category.
+isn't as big a factor as I thought.'''
+p2 = '''Native American/Alaskan Native doing worse by a lot in every category.
 Asian/Pacific Islander doing best. All other races sort of the same.'''
-elements.append(Paragraph("2-%s"%txt,style))
-elements.append(Spacer(1,space))
-txt = '''Females always a percent or two above males in terms of lack of health.
+p3 = '''Females always a percent or two above males in terms of lack of health.
 Not a large of distinction to be stastistcally signifcant, given the imprecise
 data.'''
-elements.append(Paragraph("3-%s"%txt,style))
-elements.append(PageBreak())
+numPoints(['Insights from Part 2',p1,p2,p3])
 
 #now, let's go to part 3 of our analysis
 style = ParagraphStyle(name='Normal',fontName='Times',fontSize=16,)
@@ -662,12 +598,7 @@ for question in questions:
     plt.title(question)
     #because 2002.5 is not a real year, and matplot won't convince me otherwise
     plt.gca().xaxis.set_major_locator(MaxNLocator(integer=True))
-    plt.savefig('line.png')
-    img = Image('line.png')
-    img._restrictSize(50 * space, 50 * space)
-    elements.append(img)
-    os.remove('line.png')
-    plt.clf()
+    imgSaveInsert('line')
 
 #now for our final conclusions from part 3
 style = ParagraphStyle(name='Normal',fontName='Times',fontSize=14,)
