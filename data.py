@@ -12,7 +12,8 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Image, Page
 import os
 
 #terminal start
-print "--------"
+linebreak = '--------'
+print linebreak
 
 #create the pdf, which we'll call 'behavioralRiskFactorDataHealthRelatedQualityOfLife'
 doc = SimpleDocTemplate('behavioralRiskFactorDataHealthRelatedQualityOfLife.pdf', pagesize=letter)
@@ -53,7 +54,7 @@ import numpy as np
 #load; a big csv, so set low_memory to False to avoid warnings (warning to any users w/low memory)
 d = pd.read_csv('behavioralRiskFactorDataHealthRelatedQualityOfLife.csv',low_memory=False)
 #test
-print "--------"
+print linebreak
 print "Test: Head"
 d.head()
 
@@ -66,7 +67,7 @@ for i in d.Question:
         q.append(i)
 
 #pretty print to console: this is just diagnostic confirmation that the code is working
-print "--------"
+print linebreak
 print "Test Questions:"
 for n,i in enumerate(q):
     print '%d) %s.'%(n+1,i)
@@ -96,7 +97,7 @@ for i in activityLim['Data_Value']:
         n+=1.0
 
 avgActivityLim = sm/n
-print"--------"
+print linebreak
 print "average of mean days of activity limitation: %f"%(avgActivityLim)
 avgData['Activity Limitation'] = avgActivityLim
 
@@ -112,7 +113,7 @@ for i in mentalLim['Data_Value']:
         n+=1.0
 
 avgMentalLim = sm/n
-print "--------"
+print linebreak
 print "average of mean days of mental limitation: %f"%avgMentalLim
 
 avgData['Mentally unhealthy'] = avgMentalLim
@@ -130,7 +131,7 @@ for i in physicalLim['Data_Value']:
         n+=1.0
 
 avgPhysicalLim = sm/n
-print "--------"
+print linebreak
 print "average of mean days of physical limitation: %f"%avgPhysicalLim
 
 avgData['Physically unhealthy'] = avgPhysicalLim
@@ -186,7 +187,7 @@ for i in highActivityLim['Data_Value']:
         n+=1.0
 
 avgHighActivityLim = sm/n
-print"--------"
+print linebreak
 print "Percentage with 14 or more activity limitation days: %f"%avgHighActivityLim
 
 extData['Activity Limitation'] = avgHighActivityLim
@@ -204,7 +205,7 @@ for i in highMentalLim['Data_Value']:
         n+=1.0
 
 avgHighMentalLim = sm/n
-print '--------'
+print linebreak
 print '''Percentage with 14 or more mentally unhealthy days (Frequent Mental Distress)" %f"'''%avgHighMentalLim
 
 extData['Mental Limitation'] = avgHighMentalLim
@@ -223,7 +224,7 @@ for i in highPhysicalLim['Data_Value']:
         n+=1.0
 
 avgHighPhysicalLim = sm/n
-print "--------"
+print linebreak
 print 'Percentage with 14 or more physically unhealthy days: %f'%avgHighPhysicalLim
 
 extData['Physical Limitation'] = avgHighPhysicalLim
@@ -275,7 +276,7 @@ for i in sRep['Data_Value']:
         n+=1.0
 
 avgSRep = sm/n
-print "--------"
+print linebreak
 print "Percentage with fair or poor self-rated health: %f"%avgSRep
 
 xVals = extData.values()
@@ -358,7 +359,7 @@ print len(states.keys())
 #print states
 
 #print a warning: this is a large dataset, and will take a while
-print "--------"
+print linebreak
 print "This is going to take a minute. Just hang tight."
 
 #for every state
@@ -374,7 +375,7 @@ for state in states.keys():
 print states['NY']
 
 #let's warn the terminal what we're doing
-print "--------"
+print linebreak
 print "We're drawing maps, this could take a minute."
 
 #display this data in a map
@@ -423,7 +424,7 @@ elements.append(Paragraph('''The brighter and more blue the color, the higher
 the number.''',style))
 elements.append(Spacer(1, space))
 
-for it,question in enumerate(questions):
+for question in questions:
 
     # create the map base
     map = Basemap(llcrnrlon=-119,llcrnrlat=22,urcrnrlon=-64,urcrnrlat=49,
@@ -456,11 +457,11 @@ for it,question in enumerate(questions):
 
     plt.title(question)
 
-    plt.savefig('map%d.png'%it)
-    img = Image('map%d.png'%it)
+    plt.savefig('map.png')
+    img = Image('map.png')
     img._restrictSize(50 * space, 50 * space)
     elements.append(img)
-    os.remove('map%d.png'%it)
+    os.remove('map.png')
     plt.clf()
 
 #let's write out a few conclusions from this section
@@ -510,7 +511,7 @@ for question in questions:
 
 
 #diagnostic
-print "--------"
+print linebreak
 print "ages"
 print ageList
 print "races"
@@ -519,7 +520,7 @@ print "sexes"
 print sexList
 
 #print a warning: this is a large dataset, and will take a while
-print "--------"
+print linebreak
 print "That's a lot of data! We just need a minute here."
 
 #for every age group
@@ -556,35 +557,40 @@ print sexes['Mean mentally unhealthy days']['Female']
 #let's make some bar graphs
 
 #warning to the terminal
-print "--------"
+print linebreak
 print "We're making bar graphs, hang tight!"
 
-for it,question in enumerate(questions):
+for question in questions:
     style = ParagraphStyle(name='Normal',fontName='Times',fontSize=12,)
     elements.append(Paragraph(question,style))
 
     plt.bar(range(len(ages[question])), ages[question].values())
     plt.xticks(range(len(ages[question])), sorted(ages[question].keys()), rotation=15)
+    #we have a lot of info, let's make some space for it
+    plt.gcf().subplots_adjust(bottom=0.15)
     plt.title("Distribution of Ages: %s"%question)
-    plt.savefig('ages%f.png'%it)
-    img = Image('ages%f.png'%it)
+    plt.savefig('ages.png')
+    img = Image('ages.png')
     img._restrictSize(50 * space, 50 * space)
     elements.append(img)
-    os.remove('ages%f.png'%it)
+    os.remove('ages.png')
     plt.clf()
 
     elements.append(Spacer(1, space))
 
     plt.bar(range(len(races[question])), races[question].values(),
     align='center')
-    plt.xticks(range(len(races[question])), races[question].keys(), rotation=15)
+    plt.xticks(range(len(races[question])), races[question].keys(), rotation=45)
     plt.title("Distribution of Races: %s"%question)
-    plt.savefig('races%f.png'%it)
-    img = Image('races%f.png'%it)
+    #it's a tight squeeze for x-labels
+    plt.tight_layout()
+    plt.savefig('races.png')
+    img = Image('races.png')
     img._restrictSize(50 * space, 50 * space)
     elements.append(img)
-    os.remove('races%f.png'%it)
-    plt.clf()
+    os.remove('races.png')
+    #close to clear tight_layout
+    plt.close()
 
     elements.append(Spacer(1, 2*space))
 
@@ -592,11 +598,11 @@ for it,question in enumerate(questions):
     align='center')
     plt.xticks(range(len(sexes[question])), sexes[question].keys())
     plt.title("Distribution of Sexes: %s"%question)
-    plt.savefig('sexes%f.png'%it)
-    img = Image('sexes%f.png'%it)
+    plt.savefig('sexes.png')
+    img = Image('sexes.png')
     img._restrictSize(50 * space, 50 * space)
     elements.append(img)
-    os.remove('sexes%f.png'%it)
+    os.remove('sexes.png')
     plt.clf()
 
 #our conclusions from part 2
@@ -628,7 +634,7 @@ elements.append(Spacer(1, 2 * space))
 #lets check out some years
 yrs = [int(x) for x in d['Year'].unique() if str(x) != 'nan']
 #make sure it worked
-print "--------"
+print linebreak
 print "years:"
 print yrs
 
@@ -647,7 +653,7 @@ for question in questions:
 print "years data for Mean mentally unhealthy days:"
 print years['Mean mentally unhealthy days']
 
-print "--------"
+print linebreak
 
 from matplotlib.ticker import MaxNLocator
 
